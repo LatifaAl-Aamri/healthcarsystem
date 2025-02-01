@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "593439270079",
+    "project_id": "healthcaresystem-b7957",
+    "storage_bucket": "healthcaresystem-b7957.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:593439270079:android:6f431c0d1470c7c625520a",
+        "android_client_info": {
+          "package_name": "com.example.healthcarsystem"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD0tAuFGvX0JW5Rol0fPLom2fTPURkljO0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

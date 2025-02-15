@@ -151,6 +151,13 @@ class _PatientRegisterState extends State<PatientRegister> {
                 if (value.length < 7 || !RegExp(r'^(?=.*[a-zA-Z])(?=.*\d).*$').hasMatch(value)) {
                   return 'Password must be at least 7 characters and a combination of numbers and characters';
                 }
+                if (RegExp(r'\s').hasMatch(value)) {
+                  return 'Password cannot contain spaces';
+                }
+
+                // if (value.length < 7 || !RegExp(r'^(?=.*[a-zA-Z])(?=.*\d).*$').hasMatch(value)) {
+                //   return 'Password must be at least 7 characters and a combination of numbers and characters';
+                // }
                 return null;
               },
             ),
@@ -349,6 +356,18 @@ class _PatientRegisterState extends State<PatientRegister> {
                     );
                     String key = patientdb.push().key.toString();
                     patientdb.child(key).set(newPatient.toJson());
+
+                    // Initialize notification
+                    await LocalNotification.startNoti();
+
+                    // Show notification
+                    await LocalNotification.showNoti(
+                      id: 1,
+                      title: "Healthcare System",
+                      body: "Congratulations! Your account has been successfully created.",
+                    );
+
+
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
@@ -357,9 +376,9 @@ class _PatientRegisterState extends State<PatientRegister> {
                     );
                   }
                 }
-                ////////////////////////////////////////////////////////////////
-                LocalNotification.startNoti();
-                LocalNotification.showNoti(id: 1, title: "Healthcare System notification", body: "Congratulations, your account has been successfully created.");
+
+                //LocalNotification.startNoti();
+                //LocalNotification.showNoti(id: 1, title: "Healthcare System notification", body: "Congratulations, your account has been successfully created.");
                 //displayMyAlertDialog(context);
               },
               style: ElevatedButton.styleFrom(

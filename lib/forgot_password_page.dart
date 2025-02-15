@@ -21,8 +21,8 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 
   Future<void> _sendOTPEmail(String email, String otp) async {
     final smtpServer =
-    gmail("healthcaresystem24@gmail.com", "ojvc gnay kksc yrej");
-
+    gmail("healthcaresystem24@gmail.com", "baex zkfd fvsi jjya");
+    //ojvc gnay kksc yrej
     final message = Message()
       ..from = Address('healthcaresystem24@gmail.com', 'Latifa')
       ..recipients.add(email)

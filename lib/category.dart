@@ -358,7 +358,7 @@ class _CategoryState extends State<Category> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  Image.asset('assets/images/Respiratory illnesses.png',
+                  Image.asset('assets/images/Respiratoryillnesses.png',
                       height: 150),
                   Text('Respiratory illnesses', style: TextStyle(fontSize: 16)),
                 ],

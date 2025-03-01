@@ -6,6 +6,7 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:healthcarsystem/advice_type.dart';
 
 import 'change_password_page.dart';
+import 'eye_doctor_list.dart';
 
 class Category extends StatefulWidget {
   String userKey = "";
@@ -338,6 +339,10 @@ class _CategoryState extends State<Category> {
               splashColor: Colors.blue.withAlpha(30),
               onTap: () {
                 // Navigate to Eyes category page
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => EyeDoctorList()),
+                );
               },
               child: Column(
                 mainAxisSize: MainAxisSize.min,

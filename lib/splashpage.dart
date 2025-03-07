@@ -8,7 +8,7 @@ class SplashPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Online Healthcare System'),
+       // title: Text('Online Healthcare System'),
         //   leading: IconButton(
         //     icon: Icon(Icons.arrow_back),
         //     onPressed: () {
@@ -20,7 +20,7 @@ class SplashPage extends StatelessWidget {
         child: Column(
           children: <Widget>[
             Container(
-              padding: EdgeInsets.only(top: 150),
+              padding: EdgeInsets.only(top: 100),
               alignment: Alignment.center,
               child: Text(
                 'Online Healthcare System',
@@ -32,16 +32,18 @@ class SplashPage extends StatelessWidget {
                 ),
               ),
             ),
-            SizedBox(height: 20),
+            SizedBox(height: 25),
             Text(
               'Empowering patients with medical advice and natural remedies.',
               style: TextStyle(fontSize: 18, color: Colors.grey),
               textAlign: TextAlign.center,
             ),
-            SizedBox(height: 20),
+            SizedBox(height: 30),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                primary: Color(0xFFF2BFBF),
+                backgroundColor: const Color(0xFFF2BFBF),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                //primary: Color(0xFFF2BFBF),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                 ),
@@ -56,7 +58,7 @@ class SplashPage extends StatelessWidget {
                 'Get Started',
                 style: TextStyle(
                   color: Colors.black,
-                  fontSize: 15,
+                  fontSize: 20,
                 ),
               ),
             ),

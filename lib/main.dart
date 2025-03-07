@@ -4,6 +4,8 @@ import 'package:healthcarsystem/splashpage.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_core/firebase_core.dart';
 
+import 'menu_drawer_page.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
@@ -11,7 +13,7 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key});
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -22,6 +24,11 @@ class MyApp extends StatelessWidget {
       ),
       home: SplashPage(),
       debugShowCheckedModeBanner: false,
+      initialRoute: 'splashpage',
+      routes: {
+        'splashpage':(context)=> const SplashPage(),
+        'tabpage':(context)=> const MenuDrawerPage(),
+      },
     );
   }
 }

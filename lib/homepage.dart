@@ -23,7 +23,7 @@ class Homepage extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            padding: EdgeInsets.only(top: 70),
+            padding: EdgeInsets.only(top: 50),
             alignment: Alignment.center,
             child: Text(
               'Online Healthcare System',
@@ -35,10 +35,11 @@ class Homepage extends StatelessWidget {
               ),
             ),
           ),
-          SizedBox(height: 20),
+          SizedBox(height: 35),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               primary: Color(0xFF1557B0), // Dark blue color
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
@@ -54,7 +55,7 @@ class Homepage extends StatelessWidget {
               'Patient',
               style: TextStyle(
                 color: Colors.white, // White text color
-                fontSize: 16, // Decreased font size
+                fontSize: 20, // Decreased font size
               ),
             ),
           ),
@@ -64,6 +65,7 @@ class Homepage extends StatelessWidget {
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               primary: Color(0xFF1557B0), // Dark blue color
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
@@ -79,7 +81,7 @@ class Homepage extends StatelessWidget {
               'Doctor',
               style: TextStyle(
                 color: Colors.white, // White text color
-                fontSize: 16, // Decreased font size
+                fontSize: 20, // Decreased font size
               ),
             ),
           ),
@@ -87,6 +89,7 @@ class Homepage extends StatelessWidget {
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               primary: Color(0xFF1557B0), // Dark blue color
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
@@ -102,7 +105,7 @@ class Homepage extends StatelessWidget {
               'Admin',
               style: TextStyle(
                 color: Colors.white, // White text color
-                fontSize: 16, // Decreased font size
+                fontSize: 20, // Decreased font size
               ),
             ),
           ),

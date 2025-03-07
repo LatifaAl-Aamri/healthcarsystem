@@ -10,6 +10,7 @@ import 'package:healthcarsystem/forgot_password_page.dart';
 import 'package:healthcarsystem/resetpage.dart';
 
 import 'forget_password.dart';
+import 'menu_drawer_page.dart';
 
 class PatientLogin extends StatefulWidget {
   const PatientLogin({super.key});
@@ -225,7 +226,7 @@ class _PatientLoginState extends State<PatientLogin> {
                         context,
                         MaterialPageRoute(
                           builder: (context) =>
-                              Category(userKey: authenticated),
+                          const MenuDrawerPage(),
                         ),
                       );
                     } else {

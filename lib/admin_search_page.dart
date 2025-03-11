@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 
+import 'local_notification.dart';
+
 class AdminSearchPage extends StatefulWidget {
   const AdminSearchPage({Key? key}) : super(key: key);
 
@@ -24,7 +26,7 @@ class _AdminSearchPageState extends State<AdminSearchPage> {
 
   void _filterCategories() {
     String query = _searchController.text.toLowerCase();
-    if (_allCategories.isEmpty) return; // Avoid filtering empty data
+    if (_allCategories.isEmpty) return;
 
     setState(() {
       if (query.isEmpty) {
@@ -44,21 +46,19 @@ class _AdminSearchPageState extends State<AdminSearchPage> {
       appBar: AppBar(title: const Text('Manage Categories')),
       body: Column(
         children: [
-          // Search Bar
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
                 labelText: 'Search Category',
-                prefixIcon: Icon(Icons.search),
+                prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
             ),
           ),
-
           Expanded(
             child: StreamBuilder(
               stream: _categoriesRef.onValue,
@@ -67,28 +67,38 @@ class _AdminSearchPageState extends State<AdminSearchPage> {
                   return const Center(child: Text('No categories found.'));
                 }
 
-                // Store categories only when Firebase updates
                 Map<dynamic, dynamic> categories =
                 snapshot.data!.snapshot.value as Map<dynamic, dynamic>;
                 _allCategories = categories.entries.toList();
 
-                // Only update the UI if no search is applied
                 if (_searchController.text.isEmpty) {
                   _filteredCategories = List.from(_allCategories);
                 }
 
                 return ListView(
-                  children: _filteredCategories.map((entry) {
+                  children: _filteredCategories.map((entry)  {
                     String categoryId = entry.key;
                     Map categoryData = entry.value;
+                    String imagePath = categoryData['image'] ?? '';
+                    bool isAssetImage = imagePath.startsWith("assets/");
 
                     return Card(
                       margin: const EdgeInsets.all(8.0),
                       child: ListTile(
-                        leading: categoryData['image'] != null &&
-                            categoryData['image'].isNotEmpty
-                            ? Image.network(
-                          categoryData['image'],
+                        leading: imagePath.isNotEmpty
+                            ? isAssetImage
+                            ? Image.asset(
+                          imagePath,
+                          width: 40,
+                          height: 40,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return const Icon(Icons.broken_image,
+                                color: Colors.red);
+                          },
+                        )
+                            : Image.network(
+                          imagePath,
                           width: 50,
                           height: 50,
                           fit: BoxFit.cover,
@@ -111,7 +121,7 @@ class _AdminSearchPageState extends State<AdminSearchPage> {
                             IconButton(
                               icon: const Icon(Icons.delete, color: Colors.red),
                               onPressed: () {
-                                _deleteCategory(categoryId);
+                                _showDeleteConfirmationDialog(categoryId);
                               },
                             ),
                           ],
@@ -123,7 +133,6 @@ class _AdminSearchPageState extends State<AdminSearchPage> {
               },
             ),
           ),
-
           ElevatedButton(
             onPressed: _addCategory,
             child: const Text("Add New Category"),
@@ -151,7 +160,8 @@ class _AdminSearchPageState extends State<AdminSearchPage> {
               ),
               TextField(
                 controller: imageController,
-                decoration: const InputDecoration(labelText: 'Image URL'),
+                decoration:
+                const InputDecoration(labelText: 'Image Path (URL or Asset)'),
               ),
             ],
           ),
@@ -170,6 +180,8 @@ class _AdminSearchPageState extends State<AdminSearchPage> {
                         : null,
                   });
                   Navigator.pop(context);
+
+
                 }
               },
               child: const Text('Add'),
@@ -200,7 +212,8 @@ class _AdminSearchPageState extends State<AdminSearchPage> {
               ),
               TextField(
                 controller: imageController,
-                decoration: const InputDecoration(labelText: 'Image URL'),
+                decoration:
+                const InputDecoration(labelText: 'Image Path (URL or Asset)'),
               ),
             ],
           ),
@@ -220,6 +233,7 @@ class _AdminSearchPageState extends State<AdminSearchPage> {
                   });
                   Navigator.pop(context);
                 }
+
               },
               child: const Text('Update'),
             ),
@@ -229,7 +243,32 @@ class _AdminSearchPageState extends State<AdminSearchPage> {
     );
   }
 
-  void _deleteCategory(String categoryId) {
-    _categoriesRef.child(categoryId).remove();
+  void _showDeleteConfirmationDialog(String categoryId) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Confirm Deletion'),
+          content: const Text(
+              'Are you sure you want to delete this category? This action cannot be undone.'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context); // Dismiss the dialog
+              },
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                _categoriesRef.child(categoryId).remove(); // Delete the category
+                Navigator.pop(context); // Close the dialog
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
   }
 }

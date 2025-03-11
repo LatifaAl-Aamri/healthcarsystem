@@ -395,20 +395,5 @@ class _PatientRegisterState extends State<PatientRegister> {
       ),
     );
   }
-  // void displayMyAlertDialog(BuildContext context) {
-  //   showDialog(
-  //       context: context,
-  //       builder: (BuildContext displayContext){
-  //         return AlertDialog(
-  //           title: Text("fghjk"),
-  //           content: Text("ghjkl\n"),
-  //           actions: [
-  //             ElevatedButton(onPressed: (){}, child: Text("ok")),
-  //             ElevatedButton(onPressed: (){
-  //               Navigator.pop(context);
-  //             }, child: Text("cancel"))
-  //           ],
-  //         );
-  //       });
-  // }
+
 }

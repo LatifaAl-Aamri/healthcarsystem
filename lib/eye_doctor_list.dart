@@ -18,7 +18,7 @@ class _EyeDoctorListState extends State<EyeDoctorList> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Eye Doctors List'),
-        backgroundColor: Colors.blue,
+        backgroundColor: Colors.blueAccent,
       ),
       body: Padding(
         padding: const EdgeInsets.all(10.0),
@@ -33,16 +33,16 @@ class _EyeDoctorListState extends State<EyeDoctorList> {
           },
         ),
       ),
-      backgroundColor: Colors.lightBlue[50],
+      backgroundColor: Colors.blue[50],
     );
   }
 
   Widget doctorCard({required Map doctor}) {
     return Card(
-      margin: const EdgeInsets.all(10),
-      elevation: 5,
+      margin: const EdgeInsets.symmetric(vertical: 10),
+      elevation: 8,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
+        borderRadius: BorderRadius.circular(20),
       ),
       color: Colors.white,
       child: InkWell(
@@ -51,23 +51,18 @@ class _EyeDoctorListState extends State<EyeDoctorList> {
             context,
             MaterialPageRoute(
               builder: (context) => DoctorDetails(
-                doctorName: doctor['dname'],
-                specialization: doctor['specialization'],
-                experience: doctor['years_of_experience'],
-                location: doctor['hospital_location'],
-                doctorImage: doctor['image'],
-                doctorKey: doctor['key'],
+                doctor: doctor,
               ),
             ),
           );
         },
         child: Padding(
-          padding: const EdgeInsets.all(10),
+          padding: const EdgeInsets.all(12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               ClipRRect(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(15),
                 child: doctor['image'] != null && doctor['image'] != ""
                     ? Image.network(
                   doctor['image'],
@@ -77,17 +72,17 @@ class _EyeDoctorListState extends State<EyeDoctorList> {
                 )
                     : const Icon(Icons.person, size: 120, color: Colors.grey),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 12),
               Text(
                 doctor['dname'],
                 style: const TextStyle(
-                  fontSize: 16,
+                  fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black,
+                  color: Colors.black87,
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 5),
+              const SizedBox(height: 8),
               Text(
                 doctor['specialization'],
                 style: const TextStyle(fontSize: 14, color: Colors.black54),
@@ -95,14 +90,9 @@ class _EyeDoctorListState extends State<EyeDoctorList> {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(height: 5),
+              const SizedBox(height: 8),
               Text(
-                "Experience: ${doctor['years_of_experience']} years",
-                style: const TextStyle(fontSize: 12, color: Colors.black87),
-              ),
-              const SizedBox(height: 5),
-              Text(
-                doctor['hospital_location'],
+                doctor['hospital_name'],
                 style: const TextStyle(fontSize: 12, color: Colors.black54),
                 textAlign: TextAlign.center,
                 maxLines: 2,
@@ -117,65 +107,84 @@ class _EyeDoctorListState extends State<EyeDoctorList> {
 }
 
 class DoctorDetails extends StatelessWidget {
-  final String doctorName;
-  final String specialization;
-  final String experience;
-  final String location;
-  final String doctorImage;
-  final String doctorKey;
+  final Map doctor;
 
-  const DoctorDetails({
-    Key? key,
-    required this.doctorName,
-    required this.specialization,
-    required this.experience,
-    required this.location,
-    required this.doctorImage,
-    required this.doctorKey,
-  }) : super(key: key);
+  const DoctorDetails({Key? key, required this.doctor}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(doctorName),
-        backgroundColor: Colors.blue,
+        title: Text(doctor['dname']),
+        backgroundColor: Colors.blueAccent,
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(15),
-              child: doctorImage.isNotEmpty
-                  ? Image.network(
-                doctorImage,
-                height: 200,
-                width: 200,
-                fit: BoxFit.cover,
-              )
-                  : const Icon(Icons.person, size: 200, color: Colors.grey),
+        child: Card(
+          elevation: 10,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(15),
+                  child: doctor['image'] != ""
+                      ? Image.network(
+                    doctor['image'],
+                    height: 200,
+                    width: 200,
+                    fit: BoxFit.cover,
+                  )
+                      : const Icon(Icons.person, size: 200, color: Colors.grey),
+                ),
+                const SizedBox(height: 20),
+                _buildInfoText(
+                  "Specialization: ${doctor['specialization']}",
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+                const SizedBox(height: 12),
+                _buildInfoText(
+                  "Experience: ${doctor['years_of_experience']} years",
+                  fontSize: 16,
+                ),
+                const SizedBox(height: 12),
+                _buildInfoText(
+                  "Hospital: ${doctor['hospital_name']}",
+                  fontSize: 16,
+                ),
+                const SizedBox(height: 12),
+                _buildInfoText(
+                  "Address: ${doctor['hospital_address']}",
+                  fontSize: 16,
+                ),
+                const SizedBox(height: 12),
+                _buildInfoText(
+                  "Location: ${doctor['hospital_location']}",
+                  fontSize: 16,
+                ),
+              ],
             ),
-            const SizedBox(height: 20),
-            Text(
-              "Specialization: $specialization",
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              "Experience: $experience years",
-              style: const TextStyle(fontSize: 16),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              "Hospital: $location",
-              style: const TextStyle(fontSize: 16),
-            ),
-          ],
+          ),
         ),
       ),
-      backgroundColor: Colors.lightBlue[50],
+      backgroundColor: Colors.blue[50],
+    );
+  }
+
+  Widget _buildInfoText(String text, {double fontSize = 16, FontWeight fontWeight = FontWeight.normal}) {
+    return Text(
+      text,
+      style: TextStyle(
+        fontSize: fontSize,
+        fontWeight: fontWeight,
+        color: Colors.black87,
+      ),
+      textAlign: TextAlign.center,
     );
   }
 }

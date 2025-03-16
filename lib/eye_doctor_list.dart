@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_database/ui/firebase_animated_list.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:healthcarsystem/chat_page.dart';
 
 class EyeDoctorList extends StatefulWidget {
   const EyeDoctorList({Key? key}) : super(key: key);
@@ -44,15 +46,12 @@ class _EyeDoctorListState extends State<EyeDoctorList> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
       ),
-      color: Colors.white,
       child: InkWell(
         onTap: () {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => DoctorDetails(
-                doctor: doctor,
-              ),
+              builder: (context) => DoctorDetails(doctor: doctor),
             ),
           );
         },
@@ -61,6 +60,7 @@ class _EyeDoctorListState extends State<EyeDoctorList> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              // Doctor image
               ClipRRect(
                 borderRadius: BorderRadius.circular(15),
                 child: doctor['image'] != null && doctor['image'] != ""
@@ -98,6 +98,23 @@ class _EyeDoctorListState extends State<EyeDoctorList> {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
+              // Chat icon button to navigate to ChatPage
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.chat, color: Colors.blueAccent),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ChatPage(doctor: doctor),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
             ],
           ),
         ),
@@ -111,12 +128,42 @@ class DoctorDetails extends StatelessWidget {
 
   const DoctorDetails({Key? key, required this.doctor}) : super(key: key);
 
+  // Updated _launchMaps function to check if the provided query is already a URL.
+  Future<void> _launchMaps(String query) async {
+    String urlStr;
+    if (query.startsWith("http")) {
+      urlStr = query;
+    } else {
+      urlStr =
+      "https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(query)}";
+    }
+    final Uri url = Uri.parse(urlStr);
+    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+      throw 'Could not open the map.';
+    }
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(doctor['dname']),
         backgroundColor: Colors.blueAccent,
+        actions: [
+          // Chat icon in the AppBar navigates to ChatPage
+          IconButton(
+            icon: const Icon(Icons.chat),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ChatPage(doctor: doctor),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -130,6 +177,7 @@ class DoctorDetails extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
+                // Doctor image
                 ClipRRect(
                   borderRadius: BorderRadius.circular(15),
                   child: doctor['image'] != ""
@@ -163,9 +211,20 @@ class DoctorDetails extends StatelessWidget {
                   fontSize: 16,
                 ),
                 const SizedBox(height: 12),
-                _buildInfoText(
-                  "Location: ${doctor['hospital_location']}",
-                  fontSize: 16,
+                // Clickable location text opens Google Maps
+                InkWell(
+                  onTap: () {
+                    _launchMaps(doctor['hospital_location']);
+                  },
+                  child: Text(
+                    "Location: ${doctor['hospital_location']}",
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: Colors.blue,
+                      decoration: TextDecoration.underline,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
               ],
             ),
@@ -176,7 +235,8 @@ class DoctorDetails extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoText(String text, {double fontSize = 16, FontWeight fontWeight = FontWeight.normal}) {
+  Widget _buildInfoText(String text,
+      {double fontSize = 16, FontWeight fontWeight = FontWeight.normal}) {
     return Text(
       text,
       style: TextStyle(

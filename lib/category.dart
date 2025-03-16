@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:healthcarsystem/advice_type.dart';
 import 'package:healthcarsystem/eye_doctor_list.dart';
+import 'package:healthcarsystem/skin_doctor_list.dart';
 
 class Category extends StatefulWidget {
   final String userKey;
@@ -102,6 +103,8 @@ class _CategoryState extends State<Category> {
             Navigator.push(context, MaterialPageRoute(builder: (context) => AdviceType()));
           } else if (title == "Eyes") {
             Navigator.push(context, MaterialPageRoute(builder: (context) => EyeDoctorList()));
+          }else if (title == "Skin") {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => SkinDoctorList()));
           }
         },
         child: Column(

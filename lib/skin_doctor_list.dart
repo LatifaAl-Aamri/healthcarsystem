@@ -4,28 +4,29 @@ import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:healthcarsystem/chat_page.dart';
 
-class EyeDoctorList extends StatefulWidget {
-  const EyeDoctorList({Key? key}) : super(key: key);
+class SkinDoctorList extends StatefulWidget {
+  const SkinDoctorList({Key? key}) : super(key: key);
 
   @override
-  _EyeDoctorListState createState() => _EyeDoctorListState();
+  _SkinDoctorListState createState() => _SkinDoctorListState();
 }
 
-class _EyeDoctorListState extends State<EyeDoctorList> {
-  DatabaseReference doctorDb = FirebaseDatabase.instance.ref("EyeDoctors");
-  Query doctorQuery = FirebaseDatabase.instance.ref().child('EyeDoctors');
+class _SkinDoctorListState extends State<SkinDoctorList> {
+  // Reference to the "SkinDoctors" node in your Firebase database
+  DatabaseReference skinDoctorDb = FirebaseDatabase.instance.ref("SkinDoctors");
+  Query skinDoctorQuery = FirebaseDatabase.instance.ref().child('SkinDoctors');
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Eye Doctors List'),
+        title: const Text('Skin Doctors List'),
         backgroundColor: Colors.blueAccent,
       ),
       body: Padding(
         padding: const EdgeInsets.all(10.0),
         child: FirebaseAnimatedList(
-          query: doctorQuery,
+          query: skinDoctorQuery,
           defaultChild: const Center(child: CircularProgressIndicator()),
           itemBuilder: (BuildContext context, DataSnapshot snapshot,
               Animation<double> animation, int index) {
@@ -39,6 +40,7 @@ class _EyeDoctorListState extends State<EyeDoctorList> {
     );
   }
 
+  // Build a card for each doctor
   Widget doctorCard({required Map doctor}) {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 10),
@@ -60,7 +62,7 @@ class _EyeDoctorListState extends State<EyeDoctorList> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Doctor image (can be 120×120 or smaller if you wish)
+              // Doctor image (reduced size to 120x120)
               ClipRRect(
                 borderRadius: BorderRadius.circular(15),
                 child: doctor['image'] != null && doctor['image'] != ""
@@ -123,12 +125,13 @@ class _EyeDoctorListState extends State<EyeDoctorList> {
   }
 }
 
+// The details page for each doctor
 class DoctorDetails extends StatelessWidget {
   final Map doctor;
 
   const DoctorDetails({Key? key, required this.doctor}) : super(key: key);
 
-  // Updated _launchMaps function to check if the provided query is already a URL.
+  // Launches Google Maps. If the string starts with "http", it will open it as is.
   Future<void> _launchMaps(String query) async {
     String urlStr;
     if (query.startsWith("http")) {
@@ -164,8 +167,8 @@ class DoctorDetails extends StatelessWidget {
           ),
         ],
       ),
-      // Wrap the entire content in a SingleChildScrollView for vertical scrolling
       body: SingleChildScrollView(
+        // Make the entire page scrollable if the content overflows
         child: Padding(
           padding: const EdgeInsets.all(20.0),
           child: Card(
@@ -178,7 +181,7 @@ class DoctorDetails extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // Doctor image reduced to 150×150
+                  // Doctor image (reduced size to 150x150)
                   ClipRRect(
                     borderRadius: BorderRadius.circular(15),
                     child: doctor['image'] != null && doctor['image'] != ""
@@ -212,8 +215,7 @@ class DoctorDetails extends StatelessWidget {
                     fontSize: 16,
                   ),
                   const SizedBox(height: 12),
-                  // Clickable location text opens Google Maps
-                  // and is wrapped in a horizontal scroll to avoid overflow
+                  // Make the link horizontally scrollable so it's fully visible
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: InkWell(
@@ -240,6 +242,7 @@ class DoctorDetails extends StatelessWidget {
     );
   }
 
+  // Helper widget for displaying info text
   Widget _buildInfoText(String text,
       {double fontSize = 16, FontWeight fontWeight = FontWeight.normal}) {
     return Text(
@@ -250,7 +253,7 @@ class DoctorDetails extends StatelessWidget {
         color: Colors.black87,
       ),
       textAlign: TextAlign.center,
-      // If you want the link to wrap onto multiple lines instead of scrolling:
+      // You can also enable wrapping if you prefer the link to break into multiple lines:
       // softWrap: true,
     );
   }

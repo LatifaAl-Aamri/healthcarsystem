@@ -21,11 +21,13 @@ class _AdminManageDoctorsState extends State<AdminManageDoctors> {
   FirebaseDatabase.instance.ref("respiratoryillnessesDoctors");
   final DatabaseReference toothacheDoctorsRef =
   FirebaseDatabase.instance.ref("ToothacheDoctors");
+  final DatabaseReference heartburnDoctorsRef =
+  FirebaseDatabase.instance.ref("HeartburnDoctors");
 
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 5, // Two tabs: Eye and Skin doctors
+      length: 8, // Two tabs: Eye and Skin doctors
       child: Scaffold(
         appBar: AppBar(
           title: const Text("Manage Doctors"),
@@ -35,6 +37,7 @@ class _AdminManageDoctorsState extends State<AdminManageDoctors> {
               Tab(text: "Skin Doctors"),
               Tab(text: "Eyes Doctors"),
               Tab(text: "Respiratory illnesses Doctors"),
+              Tab(text: "Heartburn Doctors"),
               Tab(text: "Toothache Doctors"),
             ],
           ),

@@ -114,10 +114,9 @@ class _CategoryState extends State<Category> {
             Navigator.push(context, MaterialPageRoute(builder: (context) => ToothacheDoctorList()));
           }else if (title == "Respiratory illnesses") {
             Navigator.push(context, MaterialPageRoute(builder: (context) => RespiratoryIllnessesDoctorList()));
+          } else if (title == "Heartburn") {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => HeartburnDoctorList()));
           }
-          // else if (title == "Heartburn") {
-          //   Navigator.push(context, MaterialPageRoute(builder: (context) => HeartburnDoctorList()));
-          // }
         },
         child: Column(
           mainAxisSize: MainAxisSize.min,

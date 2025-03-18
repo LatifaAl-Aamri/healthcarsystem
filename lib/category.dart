@@ -2,7 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:healthcarsystem/advice_type.dart';
 import 'package:healthcarsystem/eye_doctor_list.dart';
+import 'package:healthcarsystem/respiratory_illnesses_doctor_list.dart';
 import 'package:healthcarsystem/skin_doctor_list.dart';
+import 'package:healthcarsystem/toothache_doctor_list.dart';
+
+import 'hair_doctor_list.dart';
+import 'heartburn_doctor_list.dart';
 
 class Category extends StatefulWidget {
   final String userKey;
@@ -100,12 +105,19 @@ class _CategoryState extends State<Category> {
         splashColor: Colors.blue.withAlpha(30),
         onTap: () {
           if (title == "Hair") {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => AdviceType()));
+            Navigator.push(context, MaterialPageRoute(builder: (context) => HairDoctorList()));
           } else if (title == "Eyes") {
             Navigator.push(context, MaterialPageRoute(builder: (context) => EyeDoctorList()));
           }else if (title == "Skin") {
             Navigator.push(context, MaterialPageRoute(builder: (context) => SkinDoctorList()));
+          }else if (title == "Toothache") {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => ToothacheDoctorList()));
+          }else if (title == "Respiratory illnesses") {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => RespiratoryIllnessesDoctorList()));
           }
+          // else if (title == "Heartburn") {
+          //   Navigator.push(context, MaterialPageRoute(builder: (context) => HeartburnDoctorList()));
+          // }
         },
         child: Column(
           mainAxisSize: MainAxisSize.min,

@@ -15,30 +15,51 @@ class _AdminManageDoctorsState extends State<AdminManageDoctors> {
   FirebaseDatabase.instance.ref("EyeDoctors");
   final DatabaseReference skinDoctorsRef =
   FirebaseDatabase.instance.ref("SkinDoctors");
+  final DatabaseReference hairDoctorsRef =
+  FirebaseDatabase.instance.ref("HairDoctors");
+  final DatabaseReference respiratoryillnessesDoctorsRef =
+  FirebaseDatabase.instance.ref("respiratoryillnessesDoctors");
+  final DatabaseReference toothacheDoctorsRef =
+  FirebaseDatabase.instance.ref("ToothacheDoctors");
 
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 2, // Two tabs: Eye and Skin doctors
+      length: 5, // Two tabs: Eye and Skin doctors
       child: Scaffold(
         appBar: AppBar(
           title: const Text("Manage Doctors"),
           bottom: const TabBar(
             tabs: [
-              Tab(text: "Eye Doctors"),
+              Tab(text: "Hair Doctors"),
               Tab(text: "Skin Doctors"),
+              Tab(text: "Eyes Doctors"),
+              Tab(text: "Respiratory illnesses Doctors"),
+              Tab(text: "Toothache Doctors"),
             ],
           ),
         ),
         body: TabBarView(
           children: [
             DoctorListView(
-              doctorRef: eyeDoctorsRef,
-              category: "EyeDoctors",
+              doctorRef: hairDoctorsRef,
+              category: "HairDoctors",
             ),
             DoctorListView(
               doctorRef: skinDoctorsRef,
               category: "SkinDoctors",
+            ),
+            DoctorListView(
+              doctorRef: eyeDoctorsRef,
+              category: "EyeDoctors",
+            ),
+            DoctorListView(
+              doctorRef: respiratoryillnessesDoctorsRef,
+              category: "respiratoryillnessesDoctors",
+            ),
+            DoctorListView(
+              doctorRef: toothacheDoctorsRef,
+              category: "ToothacheDoctors",
             ),
           ],
         ),
@@ -297,6 +318,7 @@ class _DoctorListViewState extends State<DoctorListView> {
               onPressed: () => Navigator.pop(context),
               child: const Text("Cancel"),
             ),
+
             ElevatedButton(
               onPressed: () {
                 widget.doctorRef.child(doctorKey).remove();

@@ -22,7 +22,7 @@ class _AdminManageDoctorsState extends State<AdminManageDoctors> {
   final DatabaseReference toothacheDoctorsRef =
   FirebaseDatabase.instance.ref("ToothacheDoctors");
   final DatabaseReference heartburnDoctorsRef =
-  FirebaseDatabase.instance.ref("HeartburnDoctors");
+  FirebaseDatabase.instance.ref("heartburnDoctors");
 
   @override
   Widget build(BuildContext context) {
@@ -59,6 +59,10 @@ class _AdminManageDoctorsState extends State<AdminManageDoctors> {
             DoctorListView(
               doctorRef: respiratoryillnessesDoctorsRef,
               category: "respiratoryillnessesDoctors",
+            ),
+            DoctorListView(
+              doctorRef: heartburnDoctorsRef,
+              category: "heartburnDoctors",
             ),
             DoctorListView(
               doctorRef: toothacheDoctorsRef,

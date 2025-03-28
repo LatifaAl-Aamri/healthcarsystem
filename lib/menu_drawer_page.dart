@@ -6,6 +6,8 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'category.dart';
 import 'home_remedies_page.dart';
+import 'package:healthcarsystem/chat_screen.dart';
+
 
 class MenuDrawerPage extends StatefulWidget {
   const MenuDrawerPage({super.key});
@@ -58,10 +60,10 @@ class _MenuDrawerPageState extends State<MenuDrawerPage> {
             },
           ),
         ),
-        body: const TabBarView(
+        body: TabBarView(
           children: [
             Category(userKey: ''),
-            HomeRemediesPage(),
+            ChatScreen(),
           ],
         ),
         drawer: Drawer(

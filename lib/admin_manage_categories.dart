@@ -9,8 +9,7 @@ class AdminManageCategories extends StatefulWidget {
 }
 
 class _AdminManageCategoriesState extends State<AdminManageCategories> {
-  final DatabaseReference _categoriesRef =
-  FirebaseDatabase.instance.ref().child('categories');
+  final DatabaseReference _categoriesRef = FirebaseDatabase.instance.ref().child('catDoc/categories');
 
   TextEditingController _searchController = TextEditingController();
   List<MapEntry<dynamic, dynamic>> _allCategories = [];
@@ -43,10 +42,10 @@ class _AdminManageCategoriesState extends State<AdminManageCategories> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Manage Categories'),
+        backgroundColor: Colors.blueAccent,
       ),
       body: Column(
         children: [
-          // Search field
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: TextField(
@@ -60,7 +59,6 @@ class _AdminManageCategoriesState extends State<AdminManageCategories> {
               ),
             ),
           ),
-          // List of categories
           Expanded(
             child: StreamBuilder(
               stream: _categoriesRef.onValue,
@@ -69,8 +67,7 @@ class _AdminManageCategoriesState extends State<AdminManageCategories> {
                   return const Center(child: Text('No categories found.'));
                 }
 
-                Map<dynamic, dynamic> categories =
-                snapshot.data!.snapshot.value as Map<dynamic, dynamic>;
+                Map<dynamic, dynamic> categories = snapshot.data!.snapshot.value as Map<dynamic, dynamic>;
                 _allCategories = categories.entries.toList();
 
                 if (_searchController.text.isEmpty) {
@@ -95,10 +92,7 @@ class _AdminManageCategoriesState extends State<AdminManageCategories> {
                           height: 40,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) {
-                            return const Icon(
-                              Icons.broken_image,
-                              color: Colors.red,
-                            );
+                            return const Icon(Icons.broken_image, color: Colors.red);
                           },
                         )
                             : Image.network(
@@ -107,10 +101,7 @@ class _AdminManageCategoriesState extends State<AdminManageCategories> {
                           height: 50,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) {
-                            return const Icon(
-                              Icons.broken_image,
-                              color: Colors.red,
-                            );
+                            return const Icon(Icons.broken_image, color: Colors.red);
                           },
                         )
                             : const Icon(Icons.image, color: Colors.grey),
@@ -120,14 +111,12 @@ class _AdminManageCategoriesState extends State<AdminManageCategories> {
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            // Edit button
                             IconButton(
                               icon: const Icon(Icons.edit, color: Colors.blue),
                               onPressed: () {
                                 _editCategory(categoryId, categoryData);
                               },
                             ),
-                            // Delete button
                             IconButton(
                               icon: const Icon(Icons.delete, color: Colors.red),
                               onPressed: () {
@@ -143,18 +132,25 @@ class _AdminManageCategoriesState extends State<AdminManageCategories> {
               },
             ),
           ),
-          // Add new category button
           ElevatedButton(
             onPressed: _addCategory,
-            child: const Text("Add New Category"),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blueAccent,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            child: const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              child: Text("Add New Category", style: TextStyle(fontSize: 16)),
+            ),
           ),
+          const SizedBox(height: 12),
         ],
       ),
     );
   }
 
-  // Add new category
   void _addCategory() {
+    final _formKey = GlobalKey<FormState>();
     TextEditingController categoryController = TextEditingController();
     TextEditingController imageController = TextEditingController();
 
@@ -163,20 +159,40 @@ class _AdminManageCategoriesState extends State<AdminManageCategories> {
       builder: (context) {
         return AlertDialog(
           title: const Text('Add Category'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: categoryController,
-                decoration: const InputDecoration(labelText: 'Category Name'),
-              ),
-              TextField(
-                controller: imageController,
-                decoration: const InputDecoration(
-                  labelText: 'Image Path (URL or Asset)',
+          content: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  controller: categoryController,
+                  decoration: const InputDecoration(labelText: 'Category Name'),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Category name is required.';
+                    }
+                    final namePattern = RegExp(r'^[A-Za-z ]+$');
+                    if (!namePattern.hasMatch(value.trim())) {
+                      return 'Only letters and spaces allowed.';
+                    }
+                    return null;
+                  },
                 ),
-              ),
-            ],
+                TextFormField(
+                  controller: imageController,
+                  decoration: const InputDecoration(labelText: 'Image Path (URL only)'),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Image URL is required.';
+                    }
+                    if (!value.trim().startsWith('http')) {
+                      return 'Must be a valid link starting with http or https.';
+                    }
+                    return null;
+                  },
+                ),
+              ],
+            ),
           ),
           actions: [
             TextButton(
@@ -185,12 +201,10 @@ class _AdminManageCategoriesState extends State<AdminManageCategories> {
             ),
             ElevatedButton(
               onPressed: () {
-                if (categoryController.text.isNotEmpty) {
+                if (_formKey.currentState!.validate()) {
                   _categoriesRef.push().set({
-                    'cname': categoryController.text,
-                    'image': imageController.text.isNotEmpty
-                        ? imageController.text
-                        : null,
+                    'cname': categoryController.text.trim(),
+                    'image': imageController.text.trim(),
                   });
                   Navigator.pop(context);
                 }
@@ -203,32 +217,55 @@ class _AdminManageCategoriesState extends State<AdminManageCategories> {
     );
   }
 
-  // Edit existing category
   void _editCategory(String categoryId, Map categoryData) {
-    TextEditingController categoryController =
-    TextEditingController(text: categoryData['cname'] ?? '');
-    TextEditingController imageController =
-    TextEditingController(text: categoryData['image'] ?? '');
+    final _formKey = GlobalKey<FormState>();
+    TextEditingController categoryController = TextEditingController(text: categoryData['cname'] ?? '');
+    TextEditingController imageController = TextEditingController(text: categoryData['image'] ?? '');
 
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
           title: const Text('Edit Category'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: categoryController,
-                decoration: const InputDecoration(labelText: 'Category Name'),
-              ),
-              TextField(
-                controller: imageController,
-                decoration: const InputDecoration(
-                  labelText: 'Image Path (URL or Asset)',
+          content: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  controller: categoryController,
+                  decoration: const InputDecoration(labelText: 'Category Name'),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Category name is required.';
+                    }
+                    final trimmed = value.trim();
+                    if (trimmed.length < 3) {
+                      return 'Category name must be at least 3 characters.';
+                    }
+                    final namePattern = RegExp(r'^[A-Za-z ]+$');
+                    if (!namePattern.hasMatch(trimmed)) {
+                      return 'Only letters and spaces allowed.';
+                    }
+                    return null;
+                  },
                 ),
-              ),
-            ],
+
+                TextFormField(
+                  controller: imageController,
+                  decoration: const InputDecoration(labelText: 'Image Path (URL only)'),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Image URL is required.';
+                    }
+                    if (!value.trim().startsWith('http')) {
+                      return 'Must be a valid link starting with http or https.';
+                    }
+                    return null;
+                  },
+                ),
+              ],
+            ),
           ),
           actions: [
             TextButton(
@@ -237,12 +274,10 @@ class _AdminManageCategoriesState extends State<AdminManageCategories> {
             ),
             ElevatedButton(
               onPressed: () {
-                if (categoryController.text.isNotEmpty) {
+                if (_formKey.currentState!.validate()) {
                   _categoriesRef.child(categoryId).update({
-                    'cname': categoryController.text,
-                    'image': imageController.text.isNotEmpty
-                        ? imageController.text
-                        : null,
+                    'cname': categoryController.text.trim(),
+                    'image': imageController.text.trim(),
                   });
                   Navigator.pop(context);
                 }
@@ -255,28 +290,22 @@ class _AdminManageCategoriesState extends State<AdminManageCategories> {
     );
   }
 
-  // Delete category confirmation
   void _showDeleteConfirmationDialog(String categoryId) {
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
           title: const Text('Confirm Deletion'),
-          content: const Text(
-            'Are you sure you want to delete this category? '
-                'This action cannot be undone.',
-          ),
+          content: const Text('Are you sure you want to delete this category? This action cannot be undone.'),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.pop(context); // Dismiss the dialog
-              },
+              onPressed: () => Navigator.pop(context),
               child: const Text('Cancel'),
             ),
             ElevatedButton(
               onPressed: () {
-                _categoriesRef.child(categoryId).remove(); // Delete the category
-                Navigator.pop(context); // Close the dialog
+                _categoriesRef.child(categoryId).remove();
+                Navigator.pop(context);
               },
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
               child: const Text('Delete'),

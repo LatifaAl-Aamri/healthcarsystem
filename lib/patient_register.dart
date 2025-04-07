@@ -3,6 +3,7 @@ import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:healthcarsystem/patient_login_page.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import 'ModelClass.dart';
 import 'local_notification.dart';
@@ -25,6 +26,23 @@ class _PatientRegisterState extends State<PatientRegister> {
 
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
+
+  @override
+  void initState() {
+    super.initState();
+    initNotification();
+  }
+
+  Future<void> initNotification() async {
+    await LocalNotification.startNoti();
+    await requestNotificationPermission();
+  }
+
+  Future<void> requestNotificationPermission() async {
+    if (await Permission.notification.isDenied) {
+      await Permission.notification.request();
+    }
+  }
 
   String hashPassword(String password) {
     final bytes = utf8.encode(password);
@@ -65,237 +83,45 @@ class _PatientRegisterState extends State<PatientRegister> {
               width: 70,
               height: 150,
             ),
-            TextFormField(
-              controller: rname,
-              style: const TextStyle(
-                fontSize: 20,
-                color: Colors.black,
-              ),
-              decoration: const InputDecoration(
-                labelText: "User name",
-                labelStyle: TextStyle(fontSize: 20, color: Colors.black),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: Colors.black,
-                    width: 2.5,
-                  ),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: Colors.black,
-                    width: 2.5,
-                  ),
-                ),
-                filled: true,
-                fillColor: Color(0xFFE8EEF2),
-                hintStyle: TextStyle(color: Color(0xFF003867), fontSize: 20),
-                prefixIcon: Icon(
-                  Icons.person,
-                  color: Colors.black,
-                  size: 40,
-                ),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return "Please enter your username";
-                }
-                return null;
-              },
-            ),
+            buildTextField("User name", Icons.person, rname, false, (value) {
+              if (value == null || value.isEmpty) return "Please enter your username";
+              return null;
+            }),
             const SizedBox(height: 20),
-            TextFormField(
-              controller: rpass,
-              obscureText: !_isPasswordVisible,
-              style: const TextStyle(
-                fontSize: 20,
-                color: Colors.black,
-              ),
-              decoration: InputDecoration(
-                labelText: "Password",
-                labelStyle: const TextStyle(fontSize: 20, color: Colors.black),
-                focusedBorder: const OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: Colors.black,
-                    width: 2.5,
-                  ),
-                ),
-                enabledBorder: const OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: Colors.black,
-                    width: 2.5,
-                  ),
-                ),
-                filled: true,
-                fillColor: const Color(0xFFE8EEF2),
-                hintStyle: const TextStyle(color: Color(0xFF003867), fontSize: 20),
-                prefixIcon: const Icon(
-                  Icons.lock,
-                  color: Colors.black,
-                  size: 40,
-                ),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      _isPasswordVisible = !_isPasswordVisible;
-                    });
-                  },
-                ),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return "Please enter your password";
-                }
-                if (value.length < 7 || !RegExp(r'^(?=.*[a-zA-Z])(?=.*\d).*$').hasMatch(value)) {
-                  return 'Password must be at least 7 characters and a combination of numbers and characters';
-                }
-                if (RegExp(r'\s').hasMatch(value)) {
-                  return 'Password cannot contain spaces';
-                }
-
-                // if (value.length < 7 || !RegExp(r'^(?=.*[a-zA-Z])(?=.*\d).*$').hasMatch(value)) {
-                //   return 'Password must be at least 7 characters and a combination of numbers and characters';
-                // }
-                return null;
-              },
-            ),
+            buildPasswordField("Password", rpass, _isPasswordVisible, () {
+              setState(() => _isPasswordVisible = !_isPasswordVisible);
+            }, (value) {
+              if (value == null || value.isEmpty) return "Please enter your password";
+              if (value.length < 7 || !RegExp(r'^(?=.*[a-zA-Z])(?=.*\d).*$').hasMatch(value)) {
+                return 'Password must be at least 7 characters and include letters and numbers';
+              }
+              if (RegExp(r'\s').hasMatch(value)) return 'Password cannot contain spaces';
+              return null;
+            }),
             const SizedBox(height: 20),
-            TextFormField(
-              controller: cpass,
-              obscureText: !_isConfirmPasswordVisible,
-              style: const TextStyle(
-                fontSize: 20,
-                color: Colors.black,
-              ),
-              decoration: InputDecoration(
-                labelText: "Confirm password",
-                labelStyle: const TextStyle(fontSize: 20, color: Colors.black),
-                focusedBorder: const OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: Colors.black,
-                    width: 2.5,
-                  ),
-                ),
-                enabledBorder: const OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: Colors.black,
-                    width: 2.5,
-                  ),
-                ),
-                filled: true,
-                fillColor: const Color(0xFFE8EEF2),
-                hintStyle: const TextStyle(color: Color(0xFF003867), fontSize: 20),
-                prefixIcon: const Icon(
-                  Icons.lock,
-                  color: Colors.black,
-                  size: 40,
-                ),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _isConfirmPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
-                    });
-                  },
-                ),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return "Please confirm your password";
-                }
-                if (value != rpass.text) {
-                  return 'Passwords do not match';
-                }
-                return null;
-              },
-            ),
+            buildPasswordField("Confirm password", cpass, _isConfirmPasswordVisible, () {
+              setState(() => _isConfirmPasswordVisible = !_isConfirmPasswordVisible);
+            }, (value) {
+              if (value == null || value.isEmpty) return "Please confirm your password";
+              if (value != rpass.text) return 'Passwords do not match';
+              return null;
+            }),
             const SizedBox(height: 20),
-            TextFormField(
-              controller: remail,
-              style: const TextStyle(
-                fontSize: 20,
-                color: Colors.black,
-              ),
-              keyboardType: TextInputType.emailAddress,
-              decoration: const InputDecoration(
-                labelText: "Email",
-                labelStyle: TextStyle(fontSize: 20, color: Colors.black),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: Colors.black,
-                    width: 2.5,
-                  ),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: Colors.black,
-                    width: 2.5,
-                  ),
-                ),
-                filled: true,
-                fillColor: Color(0xFFE8EEF2),
-                hintStyle: TextStyle(color: Color(0xFF003867), fontSize: 20),
-                prefixIcon: Icon(
-                  Icons.email,
-                  color: Colors.black,
-                  size: 40,
-                ),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return "Please enter your email";
-                } else if (!RegExp(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$").hasMatch(value)) {
-                  return "Please enter a valid email address";
-                }
-                return null;
-              },
-            ),
+            buildTextField("Email", Icons.email, remail, false, (value) {
+              if (value == null || value.isEmpty) return "Please enter your email";
+              if (!RegExp(r"^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$").hasMatch(value)) {
+                return "Please enter a valid email address";
+              }
+              return null;
+            }, inputType: TextInputType.emailAddress),
             const SizedBox(height: 20),
-            TextFormField(
-              controller: rnumber,
-              keyboardType: TextInputType.phone,
-              style: const TextStyle(
-                fontSize: 20,
-                color: Colors.black,
-              ),
-              decoration: const InputDecoration(
-                labelText: "Phone Number",
-                labelStyle: TextStyle(fontSize: 20, color: Colors.black),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: Colors.black,
-                    width: 2.5,
-                  ),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: Colors.black,
-                    width: 2.5,
-                  ),
-                ),
-                filled: true,
-                fillColor: Color(0xFFE8EEF2),
-                hintStyle: TextStyle(color: Color(0xFF003867), fontSize: 20),
-                prefixIcon: Icon(
-                  Icons.phone,
-                  color: Colors.black,
-                  size: 40,
-                ),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return "Please enter your phone number";
-                }
-                if (!RegExp(r'^[97][0-9]{7}$').hasMatch(value)) {
-                  return "Please enter a valid phone number";
-                }
-                return null;
-              },
-            ),
+            buildTextField("Phone Number", Icons.phone, rnumber, false, (value) {
+              if (value == null || value.isEmpty) return "Please enter your phone number";
+              if (!RegExp(r'^[97][0-9]{7}$').hasMatch(value)) {
+                return "Please enter a valid phone number";
+              }
+              return null;
+            }, inputType: TextInputType.phone),
             const SizedBox(height: 40),
             ElevatedButton(
               onPressed: () async {
@@ -304,40 +130,17 @@ class _PatientRegisterState extends State<PatientRegister> {
                   bool emailExists = await existEmail(remail.text);
                   bool phoneExists = await existPhone(rnumber.text);
 
-                  if (userExists) {
+                  if (userExists || emailExists || phoneExists) {
+                    String message = userExists
+                        ? "The username you entered is already taken."
+                        : emailExists
+                        ? "The email address is already in use."
+                        : "The phone number is already in use.";
                     showDialog(
                       context: context,
                       builder: (context) => AlertDialog(
-                        title: const Text("Username Taken"),
-                        content: const Text("The username you entered is already taken. Please choose another one."),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context),
-                            child: const Text("Change"),
-                          ),
-                        ],
-                      ),
-                    );
-                  } else if (emailExists) {
-                    showDialog(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: const Text("Email Taken"),
-                        content: const Text("The email address you provided is already in use. Please enter a different email address."),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context),
-                            child: const Text("Change"),
-                          ),
-                        ],
-                      ),
-                    );
-                  } else if (phoneExists) {
-                    showDialog(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: const Text("Phone Number Taken"),
-                        content: const Text("The phone number you provided is already in use. Please enter a different phone number."),
+                        title: const Text("Duplicate Entry"),
+                        content: Text(message),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.pop(context),
@@ -355,10 +158,7 @@ class _PatientRegisterState extends State<PatientRegister> {
                       rnumber.text,
                     );
                     String key = patientdb.push().key.toString();
-                    patientdb.child(key).set(newPatient.toJson());
-
-                    // Initialize notification
-                    await LocalNotification.startNoti();
+                    await patientdb.child(key).set(newPatient.toJson());
 
                     // Show notification
                     await LocalNotification.showNoti(
@@ -366,7 +166,6 @@ class _PatientRegisterState extends State<PatientRegister> {
                       title: "Healthcare System",
                       body: "Congratulations! Your account has been successfully created.",
                     );
-
 
                     Navigator.pushReplacement(
                       context,
@@ -376,13 +175,9 @@ class _PatientRegisterState extends State<PatientRegister> {
                     );
                   }
                 }
-
-                //LocalNotification.startNoti();
-                //LocalNotification.showNoti(id: 1, title: "Healthcare System notification", body: "Congratulations, your account has been successfully created.");
-                //displayMyAlertDialog(context);
               },
               style: ElevatedButton.styleFrom(
-                primary: const Color(0xFF1557B0),
+                backgroundColor: const Color(0xFF1557B0),
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
@@ -396,4 +191,46 @@ class _PatientRegisterState extends State<PatientRegister> {
     );
   }
 
+  Widget buildTextField(String label, IconData icon, TextEditingController controller, bool obscure, String? Function(String?) validator,
+      {TextInputType inputType = TextInputType.text}) {
+    return TextFormField(
+      controller: controller,
+      obscureText: obscure,
+      keyboardType: inputType,
+      style: const TextStyle(fontSize: 20, color: Colors.black),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(fontSize: 20, color: Colors.black),
+        focusedBorder: const OutlineInputBorder(borderSide: BorderSide(color: Colors.black, width: 2.5)),
+        enabledBorder: const OutlineInputBorder(borderSide: BorderSide(color: Colors.black, width: 2.5)),
+        filled: true,
+        fillColor: const Color(0xFFE8EEF2),
+        prefixIcon: Icon(icon, color: Colors.black, size: 40),
+      ),
+      validator: validator,
+    );
+  }
+
+  Widget buildPasswordField(String label, TextEditingController controller, bool visible, VoidCallback toggleVisibility,
+      String? Function(String?) validator) {
+    return TextFormField(
+      controller: controller,
+      obscureText: !visible,
+      style: const TextStyle(fontSize: 20, color: Colors.black),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(fontSize: 20, color: Colors.black),
+        focusedBorder: const OutlineInputBorder(borderSide: BorderSide(color: Colors.black, width: 2.5)),
+        enabledBorder: const OutlineInputBorder(borderSide: BorderSide(color: Colors.black, width: 2.5)),
+        filled: true,
+        fillColor: const Color(0xFFE8EEF2),
+        prefixIcon: const Icon(Icons.lock, color: Colors.black, size: 40),
+        suffixIcon: IconButton(
+          icon: Icon(visible ? Icons.visibility : Icons.visibility_off),
+          onPressed: toggleVisibility,
+        ),
+      ),
+      validator: validator,
+    );
+  }
 }

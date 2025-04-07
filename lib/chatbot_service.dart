@@ -2,7 +2,11 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ChatbotService {
-  static const String apiUrl = "http://localhost:8000/chatbot";
+  //static const String apiUrl = "http://localhost:8000/chatbot";
+  static const String apiUrl = "http://10.0.2.2:8000/chatbot";
+  //static const String apiUrl = "http:// 192.168.100.18:8000/chatbot";
+
+
 
   static Future<Map<String, dynamic>> sendMessage(String user, String message) async {
     try {

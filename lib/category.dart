@@ -1,13 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:healthcarsystem/advice_type.dart';
-import 'package:healthcarsystem/eye_doctor_list.dart';
-import 'package:healthcarsystem/respiratory_illnesses_doctor_list.dart';
-import 'package:healthcarsystem/skin_doctor_list.dart';
-import 'package:healthcarsystem/toothache_doctor_list.dart';
-
-import 'hair_doctor_list.dart';
-import 'heartburn_doctor_list.dart';
+import 'package:healthcarsystem/doctor_list_page.dart';
 
 class Category extends StatefulWidget {
   final String userKey;
@@ -20,9 +13,10 @@ class Category extends StatefulWidget {
 
 class _CategoryState extends State<Category> {
   final DatabaseReference _categoriesRef =
-  FirebaseDatabase.instance.ref().child('categories');
+  FirebaseDatabase.instance.ref().child('catDoc/categories');
 
-  TextEditingController _searchController = TextEditingController();
+
+  final TextEditingController _searchController = TextEditingController();
   List<MapEntry<dynamic, dynamic>> _allCategories = [];
   List<MapEntry<dynamic, dynamic>> _filteredCategories = [];
 
@@ -70,11 +64,12 @@ class _CategoryState extends State<Category> {
               Map<dynamic, dynamic> categories =
               snapshot.data!.snapshot.value as Map<dynamic, dynamic>;
 
-              // Convert Map to List and sort: Assets first, then Network images
               _allCategories = categories.entries.toList()
                 ..sort((a, b) {
-                  bool isAAsset = a.value['image'] != null && !a.value['image'].startsWith("http");
-                  bool isBAsset = b.value['image'] != null && !b.value['image'].startsWith("http");
+                  bool isAAsset = a.value['image'] != null &&
+                      !a.value['image'].toString().startsWith("http");
+                  bool isBAsset = b.value['image'] != null &&
+                      !b.value['image'].toString().startsWith("http");
                   return (isBAsset ? 1 : 0) - (isAAsset ? 1 : 0); // Assets first
                 });
 
@@ -87,8 +82,9 @@ class _CategoryState extends State<Category> {
                 children: _filteredCategories.map((entry) {
                   String title = entry.value['cname'] ?? 'Unknown';
                   String imagePath = entry.value['image'] ?? '';
+                  String categoryId = entry.key;
 
-                  return _buildCategoryCard(title, imagePath);
+                  return _buildCategoryCard(title, imagePath, categoryId);
                 }).toList(),
               );
             },
@@ -98,25 +94,21 @@ class _CategoryState extends State<Category> {
     );
   }
 
-  Widget _buildCategoryCard(String title, String imagePath) {
+  Widget _buildCategoryCard(String title, String imagePath, String categoryId) {
     return Card(
       color: Colors.grey[200],
       child: InkWell(
         splashColor: Colors.blue.withAlpha(30),
         onTap: () {
-          if (title == "Hair") {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => HairDoctorList()));
-          } else if (title == "Eyes") {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => EyeDoctorList()));
-          }else if (title == "Skin") {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => SkinDoctorList()));
-          }else if (title == "Toothache") {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => ToothacheDoctorList()));
-          }else if (title == "Respiratory illnesses") {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => RespiratoryIllnessesDoctorList()));
-          } else if (title == "Heartburn") {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => HeartburnDoctorList()));
-          }
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => DoctorListPage(
+                categoryId: categoryId,
+                categoryName: title,
+              ),
+            ),
+          );
         },
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -149,8 +141,3 @@ class _CategoryState extends State<Category> {
     }
   }
 }
-
-
-
-
-

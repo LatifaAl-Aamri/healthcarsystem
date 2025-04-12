@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:healthcarsystem/local_notification.dart';
 
 class AdminManageCategories extends StatefulWidget {
   const AdminManageCategories({Key? key}) : super(key: key);
@@ -19,6 +20,7 @@ class _AdminManageCategoriesState extends State<AdminManageCategories> {
   void initState() {
     super.initState();
     _searchController.addListener(_filterCategories);
+    LocalNotification.startNoti();
   }
 
   void _filterCategories() {
@@ -200,12 +202,46 @@ class _AdminManageCategoriesState extends State<AdminManageCategories> {
               child: const Text('Cancel'),
             ),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 if (_formKey.currentState!.validate()) {
-                  _categoriesRef.push().set({
+                  // ✅ Check for duplicate category
+                  final newName = categoryController.text.trim().toLowerCase();
+                  final existingSnapshot = await _categoriesRef.get();
+
+                  if (existingSnapshot.exists) {
+                    final existing = Map<String, dynamic>.from(
+                        existingSnapshot.value as Map);
+
+                    final duplicate = existing.values.any((cat) {
+                      final name = (cat['cname'] ?? '').toString().toLowerCase();
+                      return name == newName;
+                    });
+
+                    if (duplicate) {
+                      // Show error if duplicate
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("This category name already exists."),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                      return;
+                    }
+                  }
+
+                  // ✅ Add new category if no duplicate
+                  await _categoriesRef.push().set({
                     'cname': categoryController.text.trim(),
                     'image': imageController.text.trim(),
                   });
+
+                  // ✅ Show local notification
+                  await LocalNotification.showNoti(
+                    id: DateTime.now().millisecondsSinceEpoch % 100000,
+                    title: "Healthcare Admin",
+                    body: "You have successfully added a new category.",
+                  );
+
                   Navigator.pop(context);
                 }
               },
@@ -216,6 +252,8 @@ class _AdminManageCategoriesState extends State<AdminManageCategories> {
       },
     );
   }
+
+
 
   void _editCategory(String categoryId, Map categoryData) {
     final _formKey = GlobalKey<FormState>();

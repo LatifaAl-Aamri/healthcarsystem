@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:healthcarsystem/chat_page.dart';
+
+import 'chat_doctor_page.dart';
 
 class DoctorListPage extends StatefulWidget {
   final String categoryId;
@@ -15,12 +16,45 @@ class DoctorListPage extends StatefulWidget {
 }
 
 class _DoctorListPageState extends State<DoctorListPage> {
-  late Query doctorQuery;
+  late DatabaseReference doctorRef;
+  List<Map> allDoctors = [];
+  List<Map> filteredDoctors = [];
+  TextEditingController searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    doctorQuery = FirebaseDatabase.instance.ref().child('catDoc/doctors/${widget.categoryId}');
+    doctorRef = FirebaseDatabase.instance.ref().child('catDoc/doctors/${widget.categoryId}');
+    fetchDoctors();
+  }
+
+  void fetchDoctors() {
+    doctorRef.once().then((DatabaseEvent event) {
+      List<Map> doctorsList = [];
+      if (event.snapshot.value != null) {
+        Map data = event.snapshot.value as Map;
+        data.forEach((key, value) {
+          Map doctor = Map<String, dynamic>.from(value);
+          doctor['key'] = key;
+          doctorsList.add(doctor);
+        });
+      }
+      setState(() {
+        allDoctors = doctorsList;
+        filteredDoctors = allDoctors;
+      });
+    });
+  }
+
+  void filterSearch(String query) {
+    List<Map> filtered = allDoctors.where((doctor) {
+      final name = doctor['dname']?.toString().toLowerCase() ?? '';
+      return name.contains(query.toLowerCase());
+    }).toList();
+
+    setState(() {
+      filteredDoctors = filtered;
+    });
   }
 
   @override
@@ -32,15 +66,31 @@ class _DoctorListPageState extends State<DoctorListPage> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(10.0),
-        child: FirebaseAnimatedList(
-          query: doctorQuery,
-          defaultChild: const Center(child: CircularProgressIndicator()),
-          itemBuilder: (BuildContext context, DataSnapshot snapshot,
-              Animation<double> animation, int index) {
-            Map doctor = snapshot.value as Map;
-            doctor['key'] = snapshot.key;
-            return doctorCard(doctor: doctor);
-          },
+        child: Column(
+          children: [
+            TextField(
+              controller: searchController,
+              onChanged: filterSearch,
+              decoration: InputDecoration(
+                labelText: 'Search by doctor name',
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Expanded(
+              child: filteredDoctors.isEmpty
+                  ? const Center(child: Text('No doctors found.'))
+                  : ListView.builder(
+                itemCount: filteredDoctors.length,
+                itemBuilder: (context, index) {
+                  return doctorCard(doctor: filteredDoctors[index]);
+                },
+              ),
+            ),
+          ],
         ),
       ),
       backgroundColor: Colors.blue[50],
@@ -110,7 +160,7 @@ class _DoctorListPageState extends State<DoctorListPage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => ChatPage(doctor: doctor),
+                          builder: (context) => ChatDoctorPage(doctor: doctor),
                         ),
                       );
                     },
@@ -153,7 +203,7 @@ class DoctorDetails extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => ChatPage(doctor: doctor),
+                  builder: (context) => ChatDoctorPage(doctor: doctor),
                 ),
               );
             },

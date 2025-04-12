@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:healthcarsystem/local_notification.dart';
 
 class AdminManageDoctors extends StatefulWidget {
   const AdminManageDoctors({Key? key}) : super(key: key);
@@ -81,6 +82,7 @@ class _DoctorListViewState extends State<DoctorListView> {
   @override
   void initState() {
     super.initState();
+    LocalNotification.startNoti();
     doctorRef =
         FirebaseDatabase.instance.ref("catDoc/doctors/${widget.categoryId}");
     _searchController.addListener(_filterDoctors);
@@ -149,7 +151,7 @@ class _DoctorListViewState extends State<DoctorListView> {
         (uri.scheme == 'http' || uri.scheme == 'https');
   }
 
-  void _submitDoctor(bool isEditing, [String? key]) {
+  void _submitDoctor(bool isEditing, [String? key]) async {
     if (_formKey.currentState!.validate()) {
       final doctorData = {
         "dname": dname.text.trim(),
@@ -160,14 +162,24 @@ class _DoctorListViewState extends State<DoctorListView> {
         "hospital_location": hospitalLocation.text.trim(),
         "image": image.text.trim(),
       };
+
       if (isEditing && key != null) {
-        doctorRef.child(key).update(doctorData);
+        await doctorRef.child(key).update(doctorData);
       } else {
-        doctorRef.push().set(doctorData);
+        await doctorRef.push().set(doctorData);
+
+        // ✅ Show local notification when a new doctor is added
+        await LocalNotification.showNoti(
+          id: DateTime.now().millisecondsSinceEpoch % 100000, // Unique ID
+          title: "Healthcare Admin",
+          body: "You have successfully added a new doctor.",
+        );
       }
+
       Navigator.pop(context);
     }
   }
+
 
   void _showDoctorDialog({bool isEditing = false, Map? doctor}) {
     if (isEditing && doctor != null) {

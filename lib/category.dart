@@ -15,7 +15,6 @@ class _CategoryState extends State<Category> {
   final DatabaseReference _categoriesRef =
   FirebaseDatabase.instance.ref().child('catDoc/categories');
 
-
   final TextEditingController _searchController = TextEditingController();
   List<MapEntry<dynamic, dynamic>> _allCategories = [];
   List<MapEntry<dynamic, dynamic>> _filteredCategories = [];
@@ -46,7 +45,7 @@ class _CategoryState extends State<Category> {
             controller: _searchController,
             decoration: InputDecoration(
               labelText: 'Search Category',
-              prefixIcon: Icon(Icons.search),
+              prefixIcon: const Icon(Icons.search),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
@@ -73,8 +72,17 @@ class _CategoryState extends State<Category> {
                   return (isBAsset ? 1 : 0) - (isAAsset ? 1 : 0); // Assets first
                 });
 
-              if (_filteredCategories.isEmpty) {
+              if (_searchController.text.isEmpty) {
                 _filteredCategories = List.from(_allCategories);
+              }
+
+              if (_filteredCategories.isEmpty) {
+                return const Center(
+                  child: Text(
+                    'No category found.',
+                    style: TextStyle(fontSize: 16, color: Colors.black54),
+                  ),
+                );
               }
 
               return GridView.count(
@@ -114,7 +122,10 @@ class _CategoryState extends State<Category> {
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             _getImageWidget(imagePath),
-            Text(title, style: const TextStyle(fontSize: 20)),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(title, style: const TextStyle(fontSize: 18)),
+            ),
           ],
         ),
       ),

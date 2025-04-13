@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:healthcarsystem/chat_page.dart';
+//import 'package:healthcarsystem/chat_page.dart';
 
 import 'chat_doctor_page.dart';
 

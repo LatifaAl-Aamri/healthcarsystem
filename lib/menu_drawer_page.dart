@@ -5,7 +5,7 @@ import 'package:healthcarsystem/splashpage.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'category.dart';
-import 'home_remedies_page.dart';
+//import 'home_remedies_page.dart';
 import 'package:healthcarsystem/chat_screen.dart';
 
 

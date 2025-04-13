@@ -1,15 +1,11 @@
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:healthcarsystem/category.dart';
 import 'package:healthcarsystem/patient_register.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:healthcarsystem/forgot_password_page.dart';
-import 'package:healthcarsystem/resetpage.dart';
-
-import 'forget_password.dart';
+import 'fingerprint_auth.dart';
 import 'menu_drawer_page.dart';
 
 class PatientLogin extends StatefulWidget {
@@ -186,6 +182,32 @@ class _PatientLoginState extends State<PatientLogin> {
                 ],
               ),
               const SizedBox(height: 20),
+              /////////////////
+
+
+              // ElevatedButton for Fingerprint Authentication
+              ElevatedButton(
+                onPressed: () {
+                  // Navigate to the fingerprint authentication page
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const FingerprintAuthPage()),
+                  );
+                },
+                child: const Text("Fingerprint Login",
+                    style: TextStyle(fontSize: 25, color: Colors.white)),
+                style: ElevatedButton.styleFrom(
+                  primary: const Color(0xFF1557B0),
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              //////////////////////////////////////////
               ElevatedButton(
                 onPressed: () {
                   Navigator.push(

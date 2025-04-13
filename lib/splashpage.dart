@@ -64,10 +64,10 @@ class SplashPage extends StatelessWidget {
             ),
             // SizedBox(height: 5), // Add SizedBox for spacing
             Container(
-              // width: 300, // Set width to match image width
-              // height: 359.4, // Set height to match image height
+              //width: 300, // Set width to match image width
+              //height: 359.4, // Set height to match image height
               width: 700, // Set width to match image width
-              height: 355, // Set height to match image height
+              height: 290, // Set height to match image height
               child: Image.asset(
                 //'assets/images/splashlogo.png',
                 'assets/images/logo.png',

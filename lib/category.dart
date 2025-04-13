@@ -123,8 +123,8 @@ class _CategoryState extends State<Category> {
           children: <Widget>[
             _getImageWidget(imagePath),
             Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(title, style: const TextStyle(fontSize: 18)),
+              padding: const EdgeInsets.all(10.0),
+              child: Text(title, style: const TextStyle(fontSize: 15)),
             ),
           ],
         ),
@@ -144,7 +144,7 @@ class _CategoryState extends State<Category> {
     } else {
       return Image.asset(
         imagePath,
-        height: 130,
+        height: 110,
         errorBuilder: (context, error, stackTrace) {
           return const Icon(Icons.image, color: Colors.grey, size: 100);
         },

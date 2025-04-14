@@ -10,11 +10,38 @@ class AdminManageCategories extends StatefulWidget {
 }
 
 class _AdminManageCategoriesState extends State<AdminManageCategories> {
-  final DatabaseReference _categoriesRef = FirebaseDatabase.instance.ref().child('catDoc/categories');
+  final DatabaseReference _categoriesRef =
+  FirebaseDatabase.instance.ref().child('catDoc/categories');
 
-  TextEditingController _searchController = TextEditingController();
+  String normalize(String text) => text.toLowerCase().replaceAll(RegExp(r'\s+'), '');
+
+  final TextEditingController _searchController = TextEditingController();
   List<MapEntry<dynamic, dynamic>> _allCategories = [];
   List<MapEntry<dynamic, dynamic>> _filteredCategories = [];
+
+  // ✅ Allowed categories list
+  final List<String> allowedCategoryNames = [
+    'heart',
+    'chronic pain',
+    'hair',
+    'skin',
+    'teeth',
+    'heartburn',
+    'respiratory illnesses',
+    'dermatology',
+    'endocrine and diabetes diseases',
+    'ENT',
+    'family medicine',
+    'digestive',
+    'general surgery',
+    'esoteric',
+    'kidney and urinary tract',
+    'feeding',
+    'eyes',
+    'orthopedic surgery',
+    'psychiatry',
+    'joints and natural medicine',
+  ];
 
   @override
   void initState() {
@@ -65,11 +92,13 @@ class _AdminManageCategoriesState extends State<AdminManageCategories> {
             child: StreamBuilder(
               stream: _categoriesRef.onValue,
               builder: (context, AsyncSnapshot<DatabaseEvent> snapshot) {
-                if (!snapshot.hasData || snapshot.data!.snapshot.value == null) {
+                if (!snapshot.hasData ||
+                    snapshot.data!.snapshot.value == null) {
                   return const Center(child: Text('No categories found.'));
                 }
 
-                Map<dynamic, dynamic> categories = snapshot.data!.snapshot.value as Map<dynamic, dynamic>;
+                Map<dynamic, dynamic> categories =
+                snapshot.data!.snapshot.value as Map<dynamic, dynamic>;
                 _allCategories = categories.entries.toList();
 
                 if (_searchController.text.isEmpty) {
@@ -94,7 +123,8 @@ class _AdminManageCategoriesState extends State<AdminManageCategories> {
                           height: 40,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) {
-                            return const Icon(Icons.broken_image, color: Colors.red);
+                            return const Icon(Icons.broken_image,
+                                color: Colors.red);
                           },
                         )
                             : Image.network(
@@ -103,7 +133,8 @@ class _AdminManageCategoriesState extends State<AdminManageCategories> {
                           height: 50,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) {
-                            return const Icon(Icons.broken_image, color: Colors.red);
+                            return const Icon(Icons.broken_image,
+                                color: Colors.red);
                           },
                         )
                             : const Icon(Icons.image, color: Colors.grey),
@@ -114,13 +145,15 @@ class _AdminManageCategoriesState extends State<AdminManageCategories> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             IconButton(
-                              icon: const Icon(Icons.edit, color: Colors.blue),
+                              icon:
+                              const Icon(Icons.edit, color: Colors.blue),
                               onPressed: () {
                                 _editCategory(categoryId, categoryData);
                               },
                             ),
                             IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.red),
+                              icon:
+                              const Icon(Icons.delete, color: Colors.red),
                               onPressed: () {
                                 _showDeleteConfirmationDialog(categoryId);
                               },
@@ -138,11 +171,13 @@ class _AdminManageCategoriesState extends State<AdminManageCategories> {
             onPressed: _addCategory,
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.blueAccent,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
             ),
             child: const Padding(
               padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              child: Text("Add New Category", style: TextStyle(fontSize: 16)),
+              child: Text("Add New Category",
+                  style: TextStyle(fontSize: 16)),
             ),
           ),
           const SizedBox(height: 12),
@@ -168,14 +203,15 @@ class _AdminManageCategoriesState extends State<AdminManageCategories> {
               children: [
                 TextFormField(
                   controller: categoryController,
-                  decoration: const InputDecoration(labelText: 'Category Name'),
+                  decoration:
+                  const InputDecoration(labelText: 'Category Name'),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
                       return 'Category name is required.';
                     }
-                    final namePattern = RegExp(r'^[A-Za-z ]+$');
-                    if (!namePattern.hasMatch(value.trim())) {
-                      return 'Only letters and spaces allowed.';
+                    final name = value.trim().toLowerCase();
+                    if (!allowedCategoryNames.contains(name)) {
+                      return 'Can Not Add This Category.';
                     }
                     return null;
                   },
@@ -204,24 +240,23 @@ class _AdminManageCategoriesState extends State<AdminManageCategories> {
             ElevatedButton(
               onPressed: () async {
                 if (_formKey.currentState!.validate()) {
-                  // ✅ Check for duplicate category
                   final newName = categoryController.text.trim().toLowerCase();
+
                   final existingSnapshot = await _categoriesRef.get();
-
                   if (existingSnapshot.exists) {
-                    final existing = Map<String, dynamic>.from(
-                        existingSnapshot.value as Map);
-
+                    final existing =
+                    Map<String, dynamic>.from(existingSnapshot.value as Map);
                     final duplicate = existing.values.any((cat) {
-                      final name = (cat['cname'] ?? '').toString().toLowerCase();
+                      final name =
+                      (cat['cname'] ?? '').toString().toLowerCase();
                       return name == newName;
                     });
 
                     if (duplicate) {
-                      // Show error if duplicate
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text("This category name already exists."),
+                          content:
+                          Text("This category name already exists."),
                           backgroundColor: Colors.red,
                         ),
                       );
@@ -229,13 +264,11 @@ class _AdminManageCategoriesState extends State<AdminManageCategories> {
                     }
                   }
 
-                  // ✅ Add new category if no duplicate
                   await _categoriesRef.push().set({
                     'cname': categoryController.text.trim(),
                     'image': imageController.text.trim(),
                   });
 
-                  // ✅ Show local notification
                   await LocalNotification.showNoti(
                     id: DateTime.now().millisecondsSinceEpoch % 100000,
                     title: "Healthcare Admin",
@@ -253,12 +286,12 @@ class _AdminManageCategoriesState extends State<AdminManageCategories> {
     );
   }
 
-
-
   void _editCategory(String categoryId, Map categoryData) {
     final _formKey = GlobalKey<FormState>();
-    TextEditingController categoryController = TextEditingController(text: categoryData['cname'] ?? '');
-    TextEditingController imageController = TextEditingController(text: categoryData['image'] ?? '');
+    TextEditingController categoryController =
+    TextEditingController(text: categoryData['cname'] ?? '');
+    TextEditingController imageController =
+    TextEditingController(text: categoryData['image'] ?? '');
 
     showDialog(
       context: context,
@@ -277,21 +310,20 @@ class _AdminManageCategoriesState extends State<AdminManageCategories> {
                     if (value == null || value.trim().isEmpty) {
                       return 'Category name is required.';
                     }
-                    final trimmed = value.trim();
-                    if (trimmed.length < 3) {
-                      return 'Category name must be at least 3 characters.';
-                    }
-                    final namePattern = RegExp(r'^[A-Za-z ]+$');
-                    if (!namePattern.hasMatch(trimmed)) {
-                      return 'Only letters and spaces allowed.';
+                    final normalized = normalize(value);
+                    final allowedNormalized = allowedCategoryNames
+                        .map((name) => normalize(name))
+                        .toList();
+                    if (!allowedNormalized.contains(normalized)) {
+                      return 'Can Not Update to This Category.';
                     }
                     return null;
                   },
                 ),
-
                 TextFormField(
                   controller: imageController,
-                  decoration: const InputDecoration(labelText: 'Image Path (URL only)'),
+                  decoration:
+                  const InputDecoration(labelText: 'Image Path (URL only)'),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
                       return 'Image URL is required.';
@@ -311,12 +343,38 @@ class _AdminManageCategoriesState extends State<AdminManageCategories> {
               child: const Text('Cancel'),
             ),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 if (_formKey.currentState!.validate()) {
-                  _categoriesRef.child(categoryId).update({
-                    'cname': categoryController.text.trim(),
+                  final updatedName = categoryController.text.trim();
+                  final normalizedUpdated = normalize(updatedName);
+
+                  final existingSnapshot = await _categoriesRef.get();
+                  if (existingSnapshot.exists) {
+                    final existing =
+                    Map<String, dynamic>.from(existingSnapshot.value as Map);
+
+                    final duplicate = existing.entries.any((entry) {
+                      if (entry.key == categoryId) return false;
+                      final existingName = (entry.value['cname'] ?? '').toString();
+                      return normalize(existingName) == normalizedUpdated;
+                    });
+
+                    if (duplicate) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("This category name already exists."),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                      return;
+                    }
+                  }
+
+                  await _categoriesRef.child(categoryId).update({
+                    'cname': updatedName,
                     'image': imageController.text.trim(),
                   });
+
                   Navigator.pop(context);
                 }
               },
@@ -328,13 +386,15 @@ class _AdminManageCategoriesState extends State<AdminManageCategories> {
     );
   }
 
+
   void _showDeleteConfirmationDialog(String categoryId) {
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
           title: const Text('Confirm Deletion'),
-          content: const Text('Are you sure you want to delete this category? This action cannot be undone.'),
+          content: const Text(
+              'Are you sure you want to delete this category? This action cannot be undone.'),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),

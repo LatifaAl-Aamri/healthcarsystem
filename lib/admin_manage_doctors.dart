@@ -79,6 +79,29 @@ class _DoctorListViewState extends State<DoctorListView> {
   List<Map> allDoctors = [];
   List<Map> filteredDoctors = [];
 
+  final Map<String, String> categorySpecializationMap = {
+    'heart': 'Cardiology',
+    'chronic pain': 'Pain Management',
+    'hair': 'Hair Transplant',
+    'skin': 'Dermatology',
+    'teeth': 'Dental',
+    'dermatology': 'Dermatology',
+    'endocrine and diabetes diseases': 'Endocrinology & Diabetes',
+    'ENT': 'ENT',
+    'family medicine': 'Family Medicine',
+    'digestive': 'Gastroenterology',
+    'general surgery': 'General Surgery',
+    'esoteric': 'Internal Medicine',
+    'kidney and urinary tract': 'Nephrology & Urology',
+    'feeding': 'Nutrition & Dietetics',
+    'eyes': 'Ophthalmology',
+    'orthopedic surgery': 'Orthopedic Surgery',
+    'psychiatry': 'Psychiatry',
+    'joints and natural medicine': 'Rheumatology & Physical Therapy',
+    'heartburn': 'Gastroenterology',
+    'respiratory illnesses': 'Pulmonology',
+  };
+
   @override
   void initState() {
     super.initState();
@@ -121,27 +144,22 @@ class _DoctorListViewState extends State<DoctorListView> {
     });
   }
 
-  // Validation for Doctor Name: must start with "Dr." and at least 3 letters following
   bool isValidDoctorName(String name) {
     final trimmed = name.trim();
     return RegExp(r'^Dr\.[A-Za-z ]{3,}$', caseSensitive: false)
         .hasMatch(trimmed);
   }
 
-  // Validation for fields like specialization, hospital name, and hospital address:
-  // Trimmed input must be at least 3 characters and include at least one letter.
   bool isValidTextField(String text) {
     final trimmed = text.trim();
     if (trimmed.length < 3) return false;
     return RegExp(r'[A-Za-z]').hasMatch(trimmed);
   }
 
-  // Validation for years of experience: must be 1 or 2 digits.
   bool isValidExperience(String text) {
     return RegExp(r'^[0-9]{1,2}$').hasMatch(text.trim());
   }
 
-  // Validate URL: empty is allowed; otherwise must be a valid URL with http/https.
   bool isValidURL(String url) {
     final trimmed = url.trim();
     if (trimmed.isEmpty) return true;
@@ -151,8 +169,33 @@ class _DoctorListViewState extends State<DoctorListView> {
         (uri.scheme == 'http' || uri.scheme == 'https');
   }
 
-  void _submitDoctor(bool isEditing, [String? key]) async {
+  Future<void> _submitDoctor(bool isEditing, [String? key]) async {
     if (_formKey.currentState!.validate()) {
+      String enteredSpecialization = specialization.text.trim().toLowerCase();
+      String? expectedSpecialization;
+
+      final categorySnapshot = await FirebaseDatabase.instance
+          .ref("catDoc/categories/${widget.categoryId}")
+          .get();
+
+      if (categorySnapshot.exists) {
+        final categoryName =
+        categorySnapshot.child("cname").value.toString().toLowerCase();
+        expectedSpecialization = categorySpecializationMap[categoryName];
+
+        if (expectedSpecialization != null &&
+            expectedSpecialization.toLowerCase() != enteredSpecialization) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                  "Doctor specialization must match the category. Expected: $expectedSpecialization"),
+              backgroundColor: Colors.red,
+            ),
+          );
+          return;
+        }
+      }
+
       final doctorData = {
         "dname": dname.text.trim(),
         "specialization": specialization.text.trim(),
@@ -163,14 +206,33 @@ class _DoctorListViewState extends State<DoctorListView> {
         "image": image.text.trim(),
       };
 
+      bool isDuplicate = allDoctors.any((doc) {
+        if (isEditing && doc['key'] == key) return false;
+        return doc['dname'].toString().toLowerCase() ==
+            doctorData['dname'].toString().toLowerCase() &&
+            doc['years_of_experience'] == doctorData['years_of_experience'] &&
+            doc['hospital_name'].toString().toLowerCase() ==
+                doctorData['hospital_name'].toString().toLowerCase() &&
+            doc['hospital_address'].toString().toLowerCase() ==
+                doctorData['hospital_address'].toString().toLowerCase();
+      });
+
+      if (isDuplicate) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Doctor with the same details already exists."),
+            backgroundColor: Colors.orange,
+          ),
+        );
+        return;
+      }
+
       if (isEditing && key != null) {
         await doctorRef.child(key).update(doctorData);
       } else {
         await doctorRef.push().set(doctorData);
-
-        // ✅ Show local notification when a new doctor is added
         await LocalNotification.showNoti(
-          id: DateTime.now().millisecondsSinceEpoch % 100000, // Unique ID
+          id: DateTime.now().millisecondsSinceEpoch % 100000,
           title: "Healthcare Admin",
           body: "You have successfully added a new doctor.",
         );
@@ -179,7 +241,6 @@ class _DoctorListViewState extends State<DoctorListView> {
       Navigator.pop(context);
     }
   }
-
 
   void _showDoctorDialog({bool isEditing = false, Map? doctor}) {
     if (isEditing && doctor != null) {
@@ -209,11 +270,9 @@ class _DoctorListViewState extends State<DoctorListView> {
           child: SingleChildScrollView(
             child: Column(
               children: [
-                // Doctor Name Field
                 TextFormField(
                   controller: dname,
-                  decoration:
-                  const InputDecoration(labelText: "Doctor Name"),
+                  decoration: const InputDecoration(labelText: "Doctor Name"),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty)
                       return 'Doctor name is required.';
@@ -224,38 +283,37 @@ class _DoctorListViewState extends State<DoctorListView> {
                     return null;
                   },
                 ),
-                // Specialization Field
                 TextFormField(
                   controller: specialization,
-                  decoration:
-                  const InputDecoration(labelText: "Specialization"),
+                  decoration: const InputDecoration(labelText: "Specialization"),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty)
                       return 'Specialization is required.';
+                    if (value.trim() == '0')
+                      return 'Specialization cannot be zero.';
                     if (!isValidTextField(value))
                       return 'Specialization must be at least 3 characters and include letters.';
                     return null;
                   },
                 ),
-                // Experience Field (1 or 2 digits)
                 TextFormField(
                   controller: experience,
-                  decoration: const InputDecoration(
-                      labelText: "Years of Experience"),
+                  decoration:
+                  const InputDecoration(labelText: "Years of Experience"),
                   keyboardType: TextInputType.number,
                   validator: (value) {
                     if (value == null || value.trim().isEmpty)
                       return 'Experience is required.';
                     if (!isValidExperience(value))
                       return 'Experience must be a number with at most 2 digits.';
+                    if (value.trim() == '0')
+                      return 'Experience cannot be zero.';
                     return null;
                   },
                 ),
-                // Hospital Name Field
                 TextFormField(
                   controller: hospitalName,
-                  decoration:
-                  const InputDecoration(labelText: "Hospital Name"),
+                  decoration: const InputDecoration(labelText: "Hospital Name"),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty)
                       return 'Hospital name is required.';
@@ -264,7 +322,6 @@ class _DoctorListViewState extends State<DoctorListView> {
                     return null;
                   },
                 ),
-                // Hospital Address Field
                 TextFormField(
                   controller: hospitalAddress,
                   decoration:
@@ -277,12 +334,10 @@ class _DoctorListViewState extends State<DoctorListView> {
                     return null;
                   },
                 ),
-                // Hospital Location Field (Optional)
                 TextFormField(
                   controller: hospitalLocation,
                   decoration: const InputDecoration(
                       labelText: "Hospital Location (Optional)"),
-                  // Allow empty input; if provided, must start with http/https.
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) return null;
                     if (!value.trim().startsWith('http')) {
@@ -291,12 +346,10 @@ class _DoctorListViewState extends State<DoctorListView> {
                     return null;
                   },
                 ),
-                // Image URL Field (Optional)
                 TextFormField(
                   controller: image,
-                  decoration: const InputDecoration(
-                      labelText: "Image URL (Optional)"),
-                  // Allow empty input; if provided, must start with http/https.
+                  decoration:
+                  const InputDecoration(labelText: "Image URL (Optional)"),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) return null;
                     if (!value.trim().startsWith('http')) {
@@ -370,8 +423,15 @@ class _DoctorListViewState extends State<DoctorListView> {
               child: const Text("Cancel")),
           ElevatedButton(
             onPressed: () {
-              doctorRef.child(key).remove();
-              Navigator.pop(context);
+              doctorRef.child(key).remove().then((_) {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text("Doctor deleted successfully."),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              });
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             child: const Text("Delete"),
@@ -392,8 +452,8 @@ class _DoctorListViewState extends State<DoctorListView> {
             decoration: InputDecoration(
               labelText: 'Search Doctor by Name',
               prefixIcon: const Icon(Icons.search),
-              border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10)),
+              border:
+              OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
             ),
           ),
         ),

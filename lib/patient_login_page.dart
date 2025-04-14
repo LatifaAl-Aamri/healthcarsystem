@@ -235,9 +235,10 @@ class _PatientLoginState extends State<PatientLogin> {
                     await authenticateUser(uname.text, upass.text);
                     if (authenticated.isNotEmpty) {
                       print(authenticated);
-                      SharedPreferences prefs =
-                      await SharedPreferences.getInstance();
+                      SharedPreferences prefs = await SharedPreferences.getInstance();
                       await prefs.setString('userKey', authenticated);
+                      await prefs.setString('patientUsername', uname.text.trim()); // important line!
+
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text('Logged In successfully.'),

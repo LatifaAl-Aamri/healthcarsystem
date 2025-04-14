@@ -8,6 +8,8 @@ import 'category.dart';
 //import 'home_remedies_page.dart';
 import 'package:healthcarsystem/chat_screen.dart';
 
+import 'package:healthcarsystem/patient_login_page.dart'; // for redirecting
+
 
 class MenuDrawerPage extends StatefulWidget {
   const MenuDrawerPage({super.key});
@@ -22,6 +24,36 @@ class _MenuDrawerPageState extends State<MenuDrawerPage> {
   final DatabaseReference feedbackRef = FirebaseDatabase.instance.ref().child('feedback');
   double _overallRating = 0.0;
   TextEditingController _opinionController = TextEditingController();
+
+  void doUserLogout(BuildContext context) async {
+    try {
+      // Clear locally stored session
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.remove('userKey'); // or use prefs.clear() to remove all
+
+      // Optional: Show confirmation
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Logged out successfully'),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      // Navigate to Login page
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const PatientLogin()),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Logout failed: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
 
   void saveFeedback() {
     String feedbackId = feedbackRef.push().key!;
@@ -268,17 +300,31 @@ class _MenuDrawerPageState extends State<MenuDrawerPage> {
                 leading: const Icon(Icons.exit_to_app),
                 title: const Text('Logout'),
                 onTap: () async {
-                  // Clear stored user session data
-                  SharedPreferences prefs = await SharedPreferences.getInstance();
-                  await prefs.remove('userKey'); // Remove only the userKey
+                  try {
+                    // Clear local session
+                    SharedPreferences prefs = await SharedPreferences.getInstance();
+                    await prefs.remove('userKey');
 
-                  // Navigate back to SplashPage to restart session
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => SplashPage()),
-                  );
+                    // Optional: Sign out from FirebaseAuth if you're using it in future
+                    // await FirebaseAuth.instance.signOut();
+
+                    // Redirect to login page and prevent going back
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(builder: (context) => const SplashPage()),
+                          (route) => false,
+                    );
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text("Logout failed: $e"),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
                 },
               ),
+
 
             ],
           ),
